@@ -7,8 +7,8 @@ defmodule Elixfix.Mixfile do
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     source_url: "https://github.com/jleahred/katas/tree/master/langs/elixir/elixfix",
-     homepage_url: "https://github.com/jleahred/katas/tree/master/langs/elixir/elixfix",
+     source_url: "https://github.com/jleahred/elixfix",
+     homepage_url: "https://github.com/jleahred/elixfix",
      docs: [logo: "jleahred_r.png",
           extras: ["README.md"]],
      deps: deps]

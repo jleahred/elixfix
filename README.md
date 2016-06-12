@@ -1,13 +1,18 @@
-# ELIXFIX
+# ElixFIX
 
+
+[(doc)](http://jleahred.github.io/elixfix.doc/readme.html)
 
 ## Description
 
-FIX protocol implementation on Elixir/Erlang
+Partial FIX protocol implementation on Elixir/Erlang
 
 This is a real-life exercise, it's not a system working on production.
 
 I don't try to support all FIX protocol features, just the basic but common ones  
+
+[FIX protocol](http://www.fixtradingcommunity.org/)
+
 
 
 ## Source organization
