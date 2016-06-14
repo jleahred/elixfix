@@ -117,7 +117,7 @@ defmodule  FSessionLogonMsg  do
         }
     end
 
-    #@lint {~r/Refactor/, false}
+    @lint {~r/Refactor/, false}
     defp process_heart_beat({status, msg_map, actions, true})  do
         case get_tag_value_mandatory_int(:HeartBtInt, msg_map)  do
             {:ok,    val}   ->
