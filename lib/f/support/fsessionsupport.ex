@@ -17,7 +17,7 @@ defmodule  FSession.Support  do
 
   example:
 
-      iex> original_message = %{:MsgType => "3", :MsgSeqNum => "101", :RefMsgType => "B"}
+      iex> original_message = %{:MsgType => "B", :MsgSeqNum => "101"}
       iex> FSession.Support.reject_msg("Testing reject", original_message)
       %{
           :MsgType => "3",
@@ -31,7 +31,7 @@ defmodule  FSession.Support  do
           :MsgType => "3",
           :RefSeqNum => original_message[:MsgSeqNum],
           :Text => description,
-          :RefMsgType => original_message[:RefMsgType]
+          :RefMsgType => original_message[:MsgType]
       }
   end
 

@@ -18,7 +18,7 @@ Please, click on source code
                     password:             "",
                     fix_version:          "",
                     heartbeat_interv:      0,
-                    receptor_msg_seq_num:  1,
-                    sender_msg_seq_num:    1
+                    receptor_msg_seq_num:  0,
+                    sender_msg_seq_num:    0
     end
 end

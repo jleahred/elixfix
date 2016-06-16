@@ -3,12 +3,14 @@ defmodule  FSessionProcessMsg  do
   Process received message
 
   It will update status.seq_number and will process the session messages
-  or will return not_session_msg:true
+  or will return
+
+  > not_session_msg: true
   """
 
 
-  import FMsgMapSupport, only: [check_tag_value: 3]
-
+  import FMsgMapSupport, only: [check_tag_value: 3, check_mandatory_tags: 2]
+  alias FSession.Support, as: FSS
 
   @doc """
   Process message and will return action to do
@@ -22,28 +24,43 @@ defmodule  FSessionProcessMsg  do
           * []
           * disconnect: true
           * send_message: msg
-          * not_session_msg: true
+          * not_session_msg: msg
   """
   def process_message(status, msg_map) do
-      status = %Session.Status{status |
-                receptor_msg_seq_num: status.receptor_msg_seq_num + 1}
+      status = increase_received_counter(status)
       {_, errors} = check_session_mandatory_tags(status, msg_map)
+      errors = errors ++ check_sequence(status, msg_map)
+
       if errors == []  do
-          {status, get_func_proc_msg(msg_map[:MsgType]).(status, msg_map)}
+          get_func_proc_msg(msg_map[:MsgType]).(status, msg_map)
       else
           {status,
            [send_message: FSS.reject_msg(
-            "Logon on invalid state #{status.status}", msg_map)]}
+            "Error #{errors}", msg_map)]}
       end
   end
 
   defp check_session_mandatory_tags(status, msg_map) do
       {msg_map, []}
+      |>  check_mandatory_tags([:MsgType, :MsgSeqNum])
       |>  check_tag_value(:BeginString,  status.fix_version)
-      |>  check_tag_value(:SenderCompID, status.sender_comp_id)
-      |>  check_tag_value(:TargetCompID, status.target_comp_id)
+      |>  check_tag_value(:SenderCompID, status.other_comp_id)
+      |>  check_tag_value(:TargetCompID, status.me_comp_id)
   end
 
+  defp check_sequence(status, msg_map) do
+      if status.receptor_msg_seq_num != msg_map[:MsgSeqNum] do
+          ["Incorrect sequence, expected: #{status.receptor_msg_seq_num}," <>
+          "  received #{msg_map[:MsgSeqNum]}"]
+      else
+          []
+      end
+  end
+
+  defp increase_received_counter(status)  do
+      %Session.Status{status |
+              receptor_msg_seq_num: status.receptor_msg_seq_num + 1}
+  end
 
   defp get_func_proc_msg(msg_type) do
       case msg_type do
@@ -59,6 +76,7 @@ defmodule  FSessionProcessMsg  do
   end
 
   defp heartbeat(status, _msg_map)  do
+      # TODO: anotate last received heartbeat
       {status, []}
   end
 
@@ -79,11 +97,10 @@ defmodule  FSessionProcessMsg  do
   end
 
   defp session_level_reject(_status, _msg_map)  do
-
+    # TODO: anotate in log
   end
 
-  defp not_session_message(_status, _msg_map)  do
-
+  defp not_session_message(status, msg_map)  do
+      {status, [not_session_message: msg_map]}
   end
-
 end

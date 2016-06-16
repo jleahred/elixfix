@@ -15,7 +15,7 @@ defmodule FProcessLogonTest do
         :Password => "1234",
         :EncryptMethod => "0",
         :HeartBtInt => "60",
-        :RefMsgType => "A",
+        :MsgType => "A",
         :ResetSeqNumFlag => "N"
     }
     @init_expected_status %Session.Status{

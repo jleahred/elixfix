@@ -8,7 +8,7 @@ defmodule FProcessLogoutTest do
     }
     @init_logout_msg %{
         :MsgSeqNum => 1,
-        :RefMsgType => "PR",
+        :MsgType => "5",
         :Text => "logout"
     }
     @init_expected_status %Session.Status{
@@ -35,7 +35,7 @@ defmodule FProcessLogoutTest do
       logout = @init_logout_msg
       expected_status = @init_expected_status
       {final_status, actions} = FSessionLogoutMsg.process(status, logout)
-      assert  actions == [send_message: %{MsgType: "3", RefMsgType: "PR", RefSeqNum: 1,
+      assert  actions == [send_message: %{MsgType: "3", RefMsgType: "5", RefSeqNum: 1,
               Text: "logout on waitting_login"}, disconnect: true]
       assert  final_status == expected_status
     end
