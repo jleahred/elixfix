@@ -171,9 +171,7 @@ defmodule FSessionProcessMsgTest  do
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
-        assert action == [not_session_message: %{BeginString: "FIX.4.4",
-                  MsgSeqNum: 1, MsgType: "NOT_SESSION",
-                  SenderCompID: "INITIATOR", TargetCompID: "ACCEPTOR"}]
+        assert action == [not_session_message: true]
     end
 
     test "Process message increase sequence 101->102" do
@@ -193,9 +191,7 @@ defmodule FSessionProcessMsgTest  do
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
-        assert action == [not_session_message: %{BeginString: "FIX.4.4",
-                  MsgSeqNum: 102, MsgType: "NOT_SESSION",
-                  SenderCompID: "INITIATOR", TargetCompID: "ACCEPTOR"}]
+        assert action == [not_session_message: true]
     end
 
     test "Process sequence bigger than expected" do
@@ -242,7 +238,7 @@ defmodule FSessionProcessMsgTest  do
     end
 
 
-    test "Process logon heartbeat" do
+    test "Process heartbeat" do
     end
 
     test "Process test request" do

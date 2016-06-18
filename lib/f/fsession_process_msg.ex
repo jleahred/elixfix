@@ -32,8 +32,8 @@ defmodule  FSessionProcessMsg  do
                                      [send_message: FSS.reject_msg(
                                       "Error #{errors}", msg_map)]}
           seq_actions != []  ->   {status, seq_actions}
-          true               ->   get_func_proc_msg(msg_map[:MsgType]).
-                                                  (status, msg_map)
+          true               ->
+              get_func_proc_msg(msg_map[:MsgType]).(status, msg_map)
       end
   end
 
@@ -120,6 +120,6 @@ defmodule  FSessionProcessMsg  do
   end
 
   defp not_session_message(status, msg_map)  do
-      {status, [not_session_message: msg_map]}
+      {status, [not_session_message: true]}
   end
 end
