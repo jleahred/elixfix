@@ -1,11 +1,7 @@
 defmodule  FSessionProcessMsg  do
   @moduledoc """
-  Process received message
+  Process received message, session level
 
-  It will update status.seq_number and will process the session messages
-  or will return
-
-  > not_session_msg: true
   """
 
 
@@ -24,19 +20,20 @@ defmodule  FSessionProcessMsg  do
           * []
           * disconnect: true
           * send_message: msg
-          * not_session_msg: msg
+          * not_session_msg: true
+          * enqueue: true
   """
   def process_message(status, msg_map) do
       status = increase_received_counter(status)
       {_, errors} = check_session_mandatory_tags(status, msg_map)
-      errors = errors ++ check_sequence(status, msg_map)
-
-      if errors == []  do
-          get_func_proc_msg(msg_map[:MsgType]).(status, msg_map)
-      else
-          {status,
-           [send_message: FSS.reject_msg(
-            "Error #{errors}", msg_map)]}
+      seq_actions = check_sequence(status, msg_map)
+      cond  do
+          errors != []       ->   {status,
+                                     [send_message: FSS.reject_msg(
+                                      "Error #{errors}", msg_map)]}
+          seq_actions != []  ->   {status, seq_actions}
+          true               ->   get_func_proc_msg(msg_map[:MsgType]).
+                                                  (status, msg_map)
       end
   end
 
@@ -48,13 +45,35 @@ defmodule  FSessionProcessMsg  do
       |>  check_tag_value(:TargetCompID, status.me_comp_id)
   end
 
-  defp check_sequence(status, msg_map) do
-      if status.receptor_msg_seq_num != msg_map[:MsgSeqNum] do
-          ["Incorrect sequence, expected: #{status.receptor_msg_seq_num}," <>
-          "  received #{msg_map[:MsgSeqNum]}"]
-      else
-          []
+
+  defp cmp(first, second) do
+      cond do
+          first == second  ->  :equal
+          first < second   ->  :minor
+          first > second   ->  :bigger
       end
+  end
+
+  defp check_sequence(status, msg_map) do
+      case cmp(msg_map[:MsgSeqNum], status.receptor_msg_seq_num)  do
+          :equal  ->  []
+          :minor  ->  [send_message: FSS.reject_msg(
+                        "Invalid sequence #{msg_map[:MsgSeqNum]} " <>
+                        "expected #{status.receptor_msg_seq_num}", msg_map)]
+                        ++ [disconnect: true]
+          :bigger ->  [enqueue: true,
+                       send_message:  request_resend(
+                                            status.receptor_msg_seq_num,
+                                            msg_map[:MsgSeqNum])]
+      end
+  end
+
+  defp  request_resend(first, last)  do
+      %{
+          :MsgType =>  "2",
+          :BeginSeqNo => first,
+          :EndSeqNo => last
+      }
   end
 
   defp increase_received_counter(status)  do

@@ -82,8 +82,7 @@ defmodule FSessionProcessMsgTest  do
         assert end_status == expected_status
         assert action == [send_message: %{MsgType: "3", RefMsgType: "A",
               RefSeqNum: nil,
-              Text: "Error missing tag MsgSeqNum(34).Incorrect sequence," <>
-              " expected: 1,  received "}]
+              Text: "Error missing tag MsgSeqNum(34)."}]
     end
 
     test "Process message missing tags (:TargetCompID)" do
@@ -200,11 +199,27 @@ defmodule FSessionProcessMsgTest  do
     end
 
     test "Process sequence bigger than expected" do
-      # request retransmission
+        init_status = %Session.Status{@base_status |  receptor_msg_seq_num: 102}
+        expected_status = %Session.Status{init_status |
+               receptor_msg_seq_num: 103
+        }
+
+        msg = %{
+            :BeginString => "FIX.4.4",
+            :SenderCompID => "INITIATOR",
+            :TargetCompID => "ACCEPTOR",
+            :MsgSeqNum => 303,
+            :MsgType => "NOT_SESSION"
+        }
+        {end_status, action} = FSessionProcessMsg.
+                                    process_message(init_status, msg)
+
+        assert end_status == expected_status
+        assert action == [enqueue: true,
+                send_message: %{BeginSeqNo: 103, EndSeqNo: 303, MsgType: "2"}]
     end
 
     test "Process sequence lower than expected" do
-        # reject and disconnect
         init_status = %Session.Status{@base_status |  receptor_msg_seq_num: 102}
         expected_status = %Session.Status{init_status |
                receptor_msg_seq_num: 103
@@ -221,9 +236,9 @@ defmodule FSessionProcessMsgTest  do
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
-        assert action == [send_message: %{MsgType: "3", RefMsgType: "NOT_SESSION",
-              RefSeqNum: 3,
-              Text: "Error Incorrect sequence, expected: 103,  received 3"}]
+        assert action == [send_message: %{MsgType: "3",
+              RefMsgType: "NOT_SESSION", RefSeqNum: 3,
+              Text: "Invalid sequence 3 expected 103"}, disconnect: true]
     end
 
 

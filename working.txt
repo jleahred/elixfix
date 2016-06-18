@@ -2,4 +2,3 @@ FSessionProcessMsg
 
 * testing process_message
 * ReceptorSender struct  receptor_msg_seq_num and last_received_heartbeat
-* testing sequence incorrect, bigger and lower than expected
