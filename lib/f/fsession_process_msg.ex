@@ -1,4 +1,4 @@
-defmodule  FSessionProcessMsg  do
+defmodule  FSessionRecProcessMsg  do
   @moduledoc """
   Process received message, session level
 
@@ -8,7 +8,7 @@ defmodule  FSessionProcessMsg  do
   import FMsgMapSupport, only: [check_tag_value: 3,
                                 check_mandatory_tags: 2,
                                 get_tag_value_mandatory_ints: 2]
-  alias FSession.Support, as: FSS
+  alias FSessionRec.Support, as: FSS
 
   @doc """
   Process message and will return action to do
@@ -88,8 +88,8 @@ defmodule  FSessionProcessMsg  do
 
   defp get_func_proc_msg(msg_type) do
       case msg_type do
-          "A"   ->  &FSessionLogonMsg.process/2
-          "5"   ->  &FSessionLogoutMsg.process/2
+          "A"   ->  &FSessionRecLogonMsg.process/2
+          "5"   ->  &FSessionRecLogoutMsg.process/2
           "0"   ->  &heartbeat/2
           "1"   ->  &test_request/2
           "4"   ->  &sequence_reset/2

@@ -1,4 +1,4 @@
-defmodule  FSessionLogoutMsg  do
+defmodule  FSessionRecLogoutMsg  do
     @moduledoc """
     Process Logon message
     """
@@ -18,7 +18,7 @@ defmodule  FSessionLogoutMsg  do
             * send_message: msg
     """
 
-    alias FSession.Support, as: FSS
+    alias FSessionRec.Support, as: FSS
 
 
     def process(status, msg_map) do

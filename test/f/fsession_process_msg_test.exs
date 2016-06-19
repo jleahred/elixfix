@@ -1,4 +1,4 @@
-defmodule FSessionProcessMsgTest  do
+defmodule FSessionRecProcessMsgTest  do
 @moduledoc false
 
     use ExUnit.Case
@@ -34,7 +34,7 @@ defmodule FSessionProcessMsgTest  do
             :RefMsgType => "A",
             :ResetSeqNumFlag => "N"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, logon_msg)
 
         assert end_status == expected_status
@@ -55,7 +55,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 1
             #:MsgType => "A"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -76,7 +76,7 @@ defmodule FSessionProcessMsgTest  do
             #:MsgSeqNum => 1,
             :MsgType => "A"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -98,7 +98,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 1,
             :MsgType => "A"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -121,7 +121,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 1,
             :MsgType => "A"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -144,7 +144,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 1,
             :MsgType => "A"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -167,7 +167,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 1,
             :MsgType => "NOT_SESSION"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -187,7 +187,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 102,
             :MsgType => "NOT_SESSION"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -207,7 +207,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 303,
             :MsgType => "NOT_SESSION"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -228,7 +228,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 3,
             :MsgType => "NOT_SESSION"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -251,7 +251,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 103,
             :MsgType => "0"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -272,7 +272,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgType => "1",
             :TestReqID => "TEST-RQ-ID"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -294,7 +294,7 @@ defmodule FSessionProcessMsgTest  do
             :GapFillFlag => "Y",
             :NewSeqNo => 110
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -316,7 +316,7 @@ defmodule FSessionProcessMsgTest  do
           :GapFillFlag => "N",
           :NewSeqNo => 110
       }
-      {end_status, action} = FSessionProcessMsg.
+      {end_status, action} = FSessionRecProcessMsg.
                                   process_message(init_status, msg)
 
       assert end_status == expected_status
@@ -340,7 +340,7 @@ defmodule FSessionProcessMsgTest  do
           :MsgType => "4",
           :NewSeqNo => 110
       }
-      {end_status, action} = FSessionProcessMsg.
+      {end_status, action} = FSessionRecProcessMsg.
                                   process_message(init_status, msg)
 
       assert end_status == expected_status
@@ -365,7 +365,7 @@ defmodule FSessionProcessMsgTest  do
             :GapFillFlag => "Y",
             :NewSeqNo => 3
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, msg)
 
         assert end_status == expected_status
@@ -395,7 +395,7 @@ defmodule FSessionProcessMsgTest  do
             :BeginSeqNo => "400",
             :EndSeqNo => "450"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, logon_msg)
 
         assert end_status == expected_status
@@ -422,7 +422,7 @@ defmodule FSessionProcessMsgTest  do
           :BeginSeqNo => "-1",
           :EndSeqNo => "450"
       }
-      {end_status, action} = FSessionProcessMsg.
+      {end_status, action} = FSessionRecProcessMsg.
                                   process_message(init_status, logon_msg)
 
       assert end_status == expected_status
@@ -450,7 +450,7 @@ defmodule FSessionProcessMsgTest  do
           :BeginSeqNo => "450",
           :EndSeqNo => "400"
       }
-      {end_status, action} = FSessionProcessMsg.
+      {end_status, action} = FSessionRecProcessMsg.
                                   process_message(init_status, logon_msg)
 
       assert end_status == expected_status
@@ -478,7 +478,7 @@ defmodule FSessionProcessMsgTest  do
             :BeginSeqNo => "450",
             :EndSeqNo => "450"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, logon_msg)
 
         assert end_status == expected_status
@@ -508,7 +508,7 @@ defmodule FSessionProcessMsgTest  do
           :BeginSeqNo => "450",
           :EndSeqNo => "502"
       }
-      {end_status, action} = FSessionProcessMsg.
+      {end_status, action} = FSessionRecProcessMsg.
                                   process_message(init_status, logon_msg)
 
       assert end_status == expected_status
@@ -532,7 +532,7 @@ defmodule FSessionProcessMsgTest  do
             :MsgSeqNum => 102,
             :MsgType => "3"
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, logon_msg)
 
         assert end_status == expected_status
@@ -556,7 +556,7 @@ defmodule FSessionProcessMsgTest  do
 
             :MsgSeqNum => 101
         }
-        {end_status, action} = FSessionProcessMsg.
+        {end_status, action} = FSessionRecProcessMsg.
                                     process_message(init_status, logon_msg)
 
         assert end_status == expected_status

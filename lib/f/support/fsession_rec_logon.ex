@@ -1,4 +1,4 @@
-defmodule  FSessionLogonMsg  do
+defmodule  FSessionRecLogonMsg  do
     @moduledoc """
     Process Logon message
     """
@@ -6,7 +6,7 @@ defmodule  FSessionLogonMsg  do
     import FMsgMapSupport, only: [check_tag_value: 3,
                                   get_tag_value_mandatory_int: 2,
                                   check_mandatory_tags: 2]
-    alias FSession.Support, as: FSS
+    alias FSessionRec.Support, as: FSS
 
 
     defp try({status, msg_map, actions, true}, function)  do

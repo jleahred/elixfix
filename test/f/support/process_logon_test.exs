@@ -1,6 +1,6 @@
 defmodule FProcessLogonTest do
     use ExUnit.Case
-    doctest FSessionLogonMsg
+    doctest FSessionRecLogonMsg
 
     @init_status %Session.Status{
         connect_role:         :acceptor,
@@ -40,7 +40,7 @@ defmodule FProcessLogonTest do
         expected_status = @init_expected_status
         confirm_login = @init_confirm_login
 
-        {final_status, actions} = FSessionLogonMsg.process(status, logon)
+        {final_status, actions} = FSessionRecLogonMsg.process(status, logon)
         assert  actions == [send_message: confirm_login]
         assert  final_status == expected_status
     end
@@ -51,7 +51,7 @@ defmodule FProcessLogonTest do
         expected_status = %Session.Status{@init_expected_status |
                                           status: :waitting_login}
 
-        {final_status, actions} = FSessionLogonMsg.process(status, logon)
+        {final_status, actions} = FSessionRecLogonMsg.process(status, logon)
         assert  actions == [send_message: %{MsgType: "3", RefMsgType: "A", RefSeqNum: 1,
               Text: " invalid tag value on: Password(554)  "}, disconnect: true]
         assert  final_status == expected_status
@@ -64,7 +64,7 @@ defmodule FProcessLogonTest do
                                           status: :waitting_login,
                                           heartbeat_interv: 33}
 
-        {final_status, actions} = FSessionLogonMsg.process(status, logon)
+        {final_status, actions} = FSessionRecLogonMsg.process(status, logon)
         assert  actions == [send_message: %{MsgType: "3", RefMsgType: "A", RefSeqNum: 1,
               Text: "Invalid HeartBtInt 60 expected 33"}, disconnect: true]
         assert  final_status == expected_status
@@ -76,7 +76,7 @@ defmodule FProcessLogonTest do
         expected_status = %Session.Status{@init_expected_status |
                                           status: :waitting_login}
 
-        {final_status, actions} = FSessionLogonMsg.process(status, logon)
+        {final_status, actions} = FSessionRecLogonMsg.process(status, logon)
         assert  actions == [send_message: %{MsgType: "3", RefMsgType: "A", RefSeqNum: 1,
               Text: " invalid tag value on: EncryptMethod(98)  received: A, expected  0"},
             disconnect: true]
@@ -91,7 +91,7 @@ defmodule FProcessLogonTest do
         logon = %{@init_logon_msg | ResetSeqNumFlag: "Y"}
         expected_status = @init_expected_status
 
-        {final_status, actions} = FSessionLogonMsg.process(status, logon)
+        {final_status, actions} = FSessionRecLogonMsg.process(status, logon)
         assert  actions == [send_message: %{EncryptMethod: "0", HeartBtInt: 60, MsgType: "A"}]
         assert  final_status == expected_status
     end
@@ -107,7 +107,7 @@ defmodule FProcessLogonTest do
                                           receptor_msg_seq_num: 101,
                                           sender_msg_seq_num:   314}
 
-        {final_status, actions} = FSessionLogonMsg.process(status, logon)
+        {final_status, actions} = FSessionRecLogonMsg.process(status, logon)
         assert  actions == [send_message: %{MsgType: "3", RefMsgType: "A", RefSeqNum: 2,
               Text: "Requested reset seq but received seq_num!=1"},
             disconnect: true]
@@ -122,7 +122,7 @@ defmodule FProcessLogonTest do
                             connect_role: :initiator}
       #confirm_login = @init_confirm_login
 
-      {final_status, actions} = FSessionLogonMsg.process(status, logon)
+      {final_status, actions} = FSessionRecLogonMsg.process(status, logon)
       assert  actions == []
       assert  final_status == expected_status
     end
@@ -137,7 +137,7 @@ defmodule FProcessLogonTest do
                             status: :logout}
       #confirm_login = @init_confirm_login
 
-      {final_status, actions} = FSessionLogonMsg.process(status, logon)
+      {final_status, actions} = FSessionRecLogonMsg.process(status, logon)
       assert  actions == [send_message: %{MsgType: "3", RefMsgType: "A", RefSeqNum: 1,
               Text: "Logon on invalid state logout"}, disconnect: true]
       assert  final_status == expected_status
@@ -153,7 +153,7 @@ defmodule FProcessLogonTest do
                             status: :logout}
       #confirm_login = @init_confirm_login
 
-      {final_status, actions} = FSessionLogonMsg.process(status, logon)
+      {final_status, actions} = FSessionRecLogonMsg.process(status, logon)
       assert  actions == [send_message: %{MsgType: "3", RefMsgType: "A", RefSeqNum: 1,
               Text: "Logon on invalid state waitting_logout"}, disconnect: true]
       assert  final_status == expected_status

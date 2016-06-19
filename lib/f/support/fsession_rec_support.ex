@@ -1,4 +1,4 @@
-defmodule  FSession.Support  do
+defmodule  FSessionRec.Support  do
 @moduledoc """
 Support pure functions to work with Sessions
 """
@@ -18,7 +18,7 @@ defmodule  FSession.Support  do
   example:
 
       iex> original_message = %{:MsgType => "B", :MsgSeqNum => "101"}
-      iex> FSession.Support.reject_msg("Testing reject", original_message)
+      iex> FSessionRec.Support.reject_msg("Testing reject", original_message)
       %{
           :MsgType => "3",
           :RefMsgType => "B",
@@ -45,7 +45,7 @@ defmodule  FSession.Support  do
 
   example:
 
-      iex> FSession.Support.request_resend("101", "314")
+      iex> FSessionRec.Support.request_resend("101", "314")
       %{:MsgType => "2",
         :BeginSeqNo => "101",
         :EndSeqNo => "314"}
