@@ -22,6 +22,8 @@ defmodule  FSessionProcessMsg  do
           * send_message: msg
           * not_session_msg: true
           * enqueue: true
+          * register_heart_beat: true
+          * write_log: description
   """
   def process_message(status, msg_map) do
       status = increase_received_counter(status)
@@ -95,8 +97,7 @@ defmodule  FSessionProcessMsg  do
   end
 
   defp heartbeat(status, _msg_map)  do
-      # TODO: anotate last received heartbeat
-      {status, []}
+      {status, [register_heart_beat: true]}
   end
 
   defp test_request(status, msg_map)  do
@@ -107,7 +108,25 @@ defmodule  FSessionProcessMsg  do
 }
   end
 
-  defp sequence_reset(_status, _msg_map)  do
+  defp sequence_reset(status, msg_map)  do
+      if msg_map[:GapFillFlag] == "Y" do
+          if msg_map[:NewSeqNo] >= status.receptor_msg_seq_num do
+              {%Session.Status{status |
+                      receptor_msg_seq_num: msg_map[:NewSeqNo]},
+              []}
+          else
+            {%Session.Status{status | status: :logout},
+              [send_message: FSS.reject_msg(
+                  "NewSeqNo not valid #{msg_map[:NewSeqNo]}, current seq " <>
+                  " #{status.receptor_msg_seq_num}", msg_map)]
+             ++ [disconnect: true]}
+          end
+      else
+        {%Session.Status{status | status: :logout},
+          [send_message: FSS.reject_msg(
+              "Expected GapFillFlag==Y", msg_map)]
+         ++ [disconnect: true]}
+      end
 
   end
 
@@ -115,11 +134,11 @@ defmodule  FSessionProcessMsg  do
 
   end
 
-  defp session_level_reject(_status, _msg_map)  do
-    # TODO: anotate in log
+  defp session_level_reject(status, msg_map)  do
+    {status, [write_log: "Received session level reject #{IO.inspect msg_map}"]}
   end
 
-  defp not_session_message(status, msg_map)  do
+  defp not_session_message(status, _msg_map)  do
       {status, [not_session_message: true]}
   end
 end

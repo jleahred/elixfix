@@ -239,21 +239,191 @@ defmodule FSessionProcessMsgTest  do
 
 
     test "Process heartbeat" do
+        init_status = %Session.Status{@base_status |  receptor_msg_seq_num: 102}
+        expected_status = %Session.Status{init_status |
+               receptor_msg_seq_num: 103
+        }
+
+        msg = %{
+            :BeginString => "FIX.4.4",
+            :SenderCompID => "INITIATOR",
+            :TargetCompID => "ACCEPTOR",
+            :MsgSeqNum => 103,
+            :MsgType => "0"
+        }
+        {end_status, action} = FSessionProcessMsg.
+                                    process_message(init_status, msg)
+
+        assert end_status == expected_status
+        assert action == [register_heart_beat: true]
     end
 
     test "Process test request" do
+        init_status = %Session.Status{@base_status |  receptor_msg_seq_num: 102}
+        expected_status = %Session.Status{init_status |
+               receptor_msg_seq_num: 103
+        }
+
+        msg = %{
+            :BeginString => "FIX.4.4",
+            :SenderCompID => "INITIATOR",
+            :TargetCompID => "ACCEPTOR",
+            :MsgSeqNum => 103,
+            :MsgType => "1",
+            :TestReqID => "TEST-RQ-ID"
+        }
+        {end_status, action} = FSessionProcessMsg.
+                                    process_message(init_status, msg)
+
+        assert end_status == expected_status
+        assert action == [send_message: %{MsgType: "0", TestReqID: "TEST-RQ-ID"}]
     end
 
-    test "Process sequence reset" do
+    test "Process sequence reset OK" do
+        init_status = %Session.Status{@base_status |  receptor_msg_seq_num: 102}
+        expected_status = %Session.Status{init_status |
+               receptor_msg_seq_num: 110
+        }
+
+        msg = %{
+            :BeginString => "FIX.4.4",
+            :SenderCompID => "INITIATOR",
+            :TargetCompID => "ACCEPTOR",
+            :MsgSeqNum => 103,
+            :MsgType => "4",
+            :GapFillFlag => "Y",
+            :NewSeqNo => 110
+        }
+        {end_status, action} = FSessionProcessMsg.
+                                    process_message(init_status, msg)
+
+        assert end_status == expected_status
+        assert action == []
+    end
+
+    test "Process sequence reset no fill gap" do
+      init_status = %Session.Status{@base_status |  receptor_msg_seq_num: 102}
+      expected_status = %Session.Status{init_status |
+             receptor_msg_seq_num: 103, status: :logout
+      }
+
+      msg = %{
+          :BeginString => "FIX.4.4",
+          :SenderCompID => "INITIATOR",
+          :TargetCompID => "ACCEPTOR",
+          :MsgSeqNum => 103,
+          :MsgType => "4",
+          :GapFillFlag => "N",
+          :NewSeqNo => 110
+      }
+      {end_status, action} = FSessionProcessMsg.
+                                  process_message(init_status, msg)
+
+      assert end_status == expected_status
+      assert action == [send_message: %{MsgType: "3", RefMsgType: "4",
+              RefSeqNum: 103,
+              Text: "Expected GapFillFlag==Y"},
+              disconnect: true]
+    end
+
+    test "Process sequence reset missing fill gap" do
+      init_status = %Session.Status{@base_status |  receptor_msg_seq_num: 102}
+      expected_status = %Session.Status{init_status |
+             receptor_msg_seq_num: 103, status: :logout
+      }
+
+      msg = %{
+          :BeginString => "FIX.4.4",
+          :SenderCompID => "INITIATOR",
+          :TargetCompID => "ACCEPTOR",
+          :MsgSeqNum => 103,
+          :MsgType => "4",
+          :NewSeqNo => 110
+      }
+      {end_status, action} = FSessionProcessMsg.
+                                  process_message(init_status, msg)
+
+      assert end_status == expected_status
+      assert action == [send_message: %{MsgType: "3", RefMsgType: "4",
+              RefSeqNum: 103,
+              Text: "Expected GapFillFlag==Y"},
+              disconnect: true]
+    end
+
+    test "Process sequence reset reducing sequence" do
+        init_status = %Session.Status{@base_status |  receptor_msg_seq_num: 102}
+        expected_status = %Session.Status{init_status |
+               receptor_msg_seq_num: 103, status: :logout
+        }
+
+        msg = %{
+            :BeginString => "FIX.4.4",
+            :SenderCompID => "INITIATOR",
+            :TargetCompID => "ACCEPTOR",
+            :MsgSeqNum => 103,
+            :MsgType => "4",
+            :GapFillFlag => "Y",
+            :NewSeqNo => 3
+        }
+        {end_status, action} = FSessionProcessMsg.
+                                    process_message(init_status, msg)
+
+        assert end_status == expected_status
+        assert action == [send_message: %{MsgType: "3", RefMsgType: "4",
+              RefSeqNum: 103,
+              Text: "NewSeqNo not valid 3, current seq  103"},
+              disconnect: true]
     end
 
     test "Process resend_request" do
     end
 
     test "Process session_level_reject" do
+        init_status = %Session.Status{@base_status |
+               receptor_msg_seq_num: 101,
+               status: :login_ok
+        }
+        expected_status = %Session.Status{init_status |
+               receptor_msg_seq_num: 102,
+        }
+
+        logon_msg = %{
+            :BeginString => "FIX.4.4",
+            :SenderCompID => "INITIATOR",
+            :TargetCompID => "ACCEPTOR",
+            :MsgSeqNum => 102,
+            :MsgType => "3"
+        }
+        {end_status, action} = FSessionProcessMsg.
+                                    process_message(init_status, logon_msg)
+
+        assert end_status == expected_status
+        assert action == [send_message:
+                      %{EncryptMethod: "0", HeartBtInt: 60, MsgType: "A"}]
     end
 
     test "not_session_message" do
+        init_status = %Session.Status{@base_status |
+               receptor_msg_seq_num: 100,
+               status: :login_ok
+        }
+        expected_status = %Session.Status{init_status |
+               receptor_msg_seq_num: 101
+        }
+
+        logon_msg = %{
+            :BeginString => "FIX.4.4",
+            :SenderCompID => "INITIATOR",
+            :TargetCompID => "ACCEPTOR",
+            :MsgType => "NOT_SESSION",
+
+            :MsgSeqNum => 101
+        }
+        {end_status, action} = FSessionProcessMsg.
+                                    process_message(init_status, logon_msg)
+
+        assert end_status == expected_status
+        assert action == [not_session_message: true]
     end
 
 end
