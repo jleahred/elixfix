@@ -5,7 +5,9 @@ defmodule  FSessionProcessMsg  do
   """
 
 
-  import FMsgMapSupport, only: [check_tag_value: 3, check_mandatory_tags: 2]
+  import FMsgMapSupport, only: [check_tag_value: 3,
+                                check_mandatory_tags: 2,
+                                get_tag_value_mandatory_ints: 2]
   alias FSession.Support, as: FSS
 
   @doc """
@@ -24,6 +26,7 @@ defmodule  FSessionProcessMsg  do
           * enqueue: true
           * register_heart_beat: true
           * write_log: description
+          * resend_msgs: {first, last}
   """
   def process_message(status, msg_map) do
       status = increase_received_counter(status)
@@ -105,7 +108,7 @@ defmodule  FSessionProcessMsg  do
                 :MsgType => "0",
                 :TestReqID => msg_map[:TestReqID],
             }
-}
+      }
   end
 
   defp sequence_reset(status, msg_map)  do
@@ -130,12 +133,45 @@ defmodule  FSessionProcessMsg  do
 
   end
 
-  defp resend_request(_status, _msg_map)  do
+
+  defp  check_resend_seqs(begin_seq, end_seq, status)  do
+      cond do
+        begin_seq >= end_seq ->
+                  "incorrect begin, end :  #{begin_seq}, #{end_seq}" <>
+                  " begin has to be < than end"
+        begin_seq < 1 ->
+                  "incorrect begin :  #{begin_seq}" <>
+                  " begin has to be > 0"
+        begin_seq >= end_seq ->
+                  "incorrect begin, end :  #{begin_seq}, #{end_seq}" <>
+                  " begin has to be < than end"
+        end_seq > status.sender_msg_seq_num ->
+                  "incorrect end :  #{end_seq}" <>
+                  " last sent #{status.sender_msg_seq_num}"
+        true  ->  ""
+      end
+  end
+
+  defp resend_request(status, msg_map)  do
+      {[begin_seq, end_seq], errors} = get_tag_value_mandatory_ints(msg_map, [:BeginSeqNo, :EndSeqNo])
+      if errors != [] do
+          {status,
+            [send_message: FSS.reject_msg(
+                List.to_string(errors), msg_map)]}
+      else
+          error_desc = check_resend_seqs(begin_seq, end_seq, status)
+
+          if error_desc == "" do
+              {status, [resend_seqs: {begin_seq, end_seq}]}
+          else
+              {status, [send_message: FSS.reject_msg(error_desc, msg_map)]}
+          end
+      end
 
   end
 
   defp session_level_reject(status, msg_map)  do
-    {status, [write_log: "Received session level reject #{IO.inspect msg_map}"]}
+    {status, [write_log: "Received session level reject #{msg_map[:MsgSeqNum]}"]}
   end
 
   defp not_session_message(status, _msg_map)  do

@@ -76,6 +76,35 @@ def get_tag_value_mandatory_int(tag, msg_map)  do
 end
 
 
+@doc """
+Return {[ints], [errors]} from [tags]
+
+It will return
+
+> {[ints], [errors]}
+
+    iex> msg_map = FMsgParse.parse_string_test(
+    ...> "8=FIX.4.1|9=122|35=D|34=215|49=CLIENT12|"<>
+    ...> "52=20100225-19:41:57.316|56=B|1=Marcel|11=13346|"<>
+    ...> "21=1|40=2|44=5|54=1|59=0|60=20100225-19:39:52.020|10=072|")
+    ...> .parsed.msg_map
+    iex> FMsgMapSupport.get_tag_value_mandatory_ints(msg_map, [:BodyLength, :Price, :ClOrdID])
+    {[122, 5, 13346], []}
+    iex> FMsgMapSupport.get_tag_value_mandatory_ints(msg_map, [:BodyLength, :Price, :HandlInst, :SenderCompID, :Account])
+    {[122, 5, 1, nil, nil], ["invalid val on tag SenderCompID(49)", "invalid val on tag Account(1)"]}
+
+"""
+def get_tag_value_mandatory_ints(msg_map, tags)  do
+  Enum.reduce(tags, {[],[]},
+      fn(tag, {vals, errors}) ->
+          case get_tag_value_mandatory_int(tag, msg_map) do
+              {:ok, val}  -> {vals ++ [val] , errors}
+              {:error, desc} -> {vals ++ [nil], errors ++ [desc]}
+          end
+      end)
+end
+
+
 @doc ~S"""
 This will check if all tags exists in message parsed
 

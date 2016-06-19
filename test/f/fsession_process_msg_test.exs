@@ -375,7 +375,145 @@ defmodule FSessionProcessMsgTest  do
               disconnect: true]
     end
 
-    test "Process resend_request" do
+    test "Process resend_request OK" do
+        init_status = %Session.Status{@base_status |
+               receptor_msg_seq_num: 101,
+               sender_msg_seq_num: 501,
+               status: :login_ok
+        }
+        expected_status = %Session.Status{init_status |
+               receptor_msg_seq_num: 102
+        }
+
+        logon_msg = %{
+            :BeginString => "FIX.4.4",
+            :SenderCompID => "INITIATOR",
+            :TargetCompID => "ACCEPTOR",
+            :MsgType => "2",
+            :MsgSeqNum => 102,
+
+            :BeginSeqNo => "400",
+            :EndSeqNo => "450"
+        }
+        {end_status, action} = FSessionProcessMsg.
+                                    process_message(init_status, logon_msg)
+
+        assert end_status == expected_status
+        assert action == [resend_seqs: {400, 450}]
+    end
+
+    test "Process resend_request -1 begin" do
+      init_status = %Session.Status{@base_status |
+             receptor_msg_seq_num: 101,
+             sender_msg_seq_num: 501,
+             status: :login_ok
+      }
+      expected_status = %Session.Status{init_status |
+             receptor_msg_seq_num: 102
+      }
+
+      logon_msg = %{
+          :BeginString => "FIX.4.4",
+          :SenderCompID => "INITIATOR",
+          :TargetCompID => "ACCEPTOR",
+          :MsgType => "2",
+          :MsgSeqNum => 102,
+
+          :BeginSeqNo => "-1",
+          :EndSeqNo => "450"
+      }
+      {end_status, action} = FSessionProcessMsg.
+                                  process_message(init_status, logon_msg)
+
+      assert end_status == expected_status
+      assert action == [send_message: %{MsgType: "3", RefMsgType: "2", RefSeqNum: 102,
+              Text: "incorrect begin :  -1 begin has to be > 0"}]
+    end
+
+    test "Process resend_request begin < last" do
+      init_status = %Session.Status{@base_status |
+             receptor_msg_seq_num: 101,
+             sender_msg_seq_num: 501,
+             status: :login_ok
+      }
+      expected_status = %Session.Status{init_status |
+             receptor_msg_seq_num: 102
+      }
+
+      logon_msg = %{
+          :BeginString => "FIX.4.4",
+          :SenderCompID => "INITIATOR",
+          :TargetCompID => "ACCEPTOR",
+          :MsgType => "2",
+          :MsgSeqNum => 102,
+
+          :BeginSeqNo => "450",
+          :EndSeqNo => "400"
+      }
+      {end_status, action} = FSessionProcessMsg.
+                                  process_message(init_status, logon_msg)
+
+      assert end_status == expected_status
+      assert action == [send_message: %{MsgType: "3", RefMsgType: "2", RefSeqNum: 102,
+              Text: "incorrect begin, end :  450, 400 begin has to be < than end"}]
+    end
+
+    test "Process resend_request begin == last" do
+        init_status = %Session.Status{@base_status |
+               receptor_msg_seq_num: 101,
+               sender_msg_seq_num: 501,
+               status: :login_ok
+        }
+        expected_status = %Session.Status{init_status |
+               receptor_msg_seq_num: 102
+        }
+
+        logon_msg = %{
+            :BeginString => "FIX.4.4",
+            :SenderCompID => "INITIATOR",
+            :TargetCompID => "ACCEPTOR",
+            :MsgType => "2",
+            :MsgSeqNum => 102,
+
+            :BeginSeqNo => "450",
+            :EndSeqNo => "450"
+        }
+        {end_status, action} = FSessionProcessMsg.
+                                    process_message(init_status, logon_msg)
+
+        assert end_status == expected_status
+        assert action == [send_message: %{MsgType: "3", RefMsgType: "2",
+              RefSeqNum: 102,
+              Text: "incorrect begin, end :  450, 450 begin has to be < than end"}]
+    end
+
+
+    test "Process resend_request last > last_sent" do
+      init_status = %Session.Status{@base_status |
+             receptor_msg_seq_num: 101,
+             sender_msg_seq_num: 501,
+             status: :login_ok
+      }
+      expected_status = %Session.Status{init_status |
+             receptor_msg_seq_num: 102
+      }
+
+      logon_msg = %{
+          :BeginString => "FIX.4.4",
+          :SenderCompID => "INITIATOR",
+          :TargetCompID => "ACCEPTOR",
+          :MsgType => "2",
+          :MsgSeqNum => 102,
+
+          :BeginSeqNo => "450",
+          :EndSeqNo => "502"
+      }
+      {end_status, action} = FSessionProcessMsg.
+                                  process_message(init_status, logon_msg)
+
+      assert end_status == expected_status
+      assert action == [send_message: %{MsgType: "3", RefMsgType: "2", RefSeqNum: 102,
+              Text: "incorrect end :  502 last sent 501"}]
     end
 
     test "Process session_level_reject" do
@@ -398,8 +536,7 @@ defmodule FSessionProcessMsgTest  do
                                     process_message(init_status, logon_msg)
 
         assert end_status == expected_status
-        assert action == [send_message:
-                      %{EncryptMethod: "0", HeartBtInt: 60, MsgType: "A"}]
+        assert action == [write_log: "Received session level reject 102"]
     end
 
     test "not_session_message" do
