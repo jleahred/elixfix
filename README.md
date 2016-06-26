@@ -32,7 +32,7 @@ Pending...
 
 ## TODOs
 
-* Test on process_message
+* (done) Test on process_message
     * It has to work with parsed message, not with message_map
     * It has to check valid message format
 * (done) MsgSeqNum  has to save the value on int (on parse)
@@ -40,8 +40,8 @@ Pending...
 * (done) Add credo
 * (done) Tags dictionary
 * Functions
-    * On FSessionReceiver, create struct for config to be used on Status
-    * SessionReceiver
+    * (done) FSessionRec
+    * FSessionSender
     * Message Builder
 * Services (actors)
     * TCP (acceptor, initiator)
@@ -50,4 +50,3 @@ Pending...
     * SessionDispacher
     * SessionManager
     * ...
-* check all ++

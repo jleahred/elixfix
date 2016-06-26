@@ -284,6 +284,7 @@ Status could be...
       }
   end
 
+  @lint {~r/Refactor/, false}
   defp _add_char(%StPartVal{parsed: parsed, tag: tag, chunk: chunk}, 1)  do
     error = cond do
         tag != :BeginString and parsed.num_tags == 0  ->  "First tag has to be BeginString"
@@ -297,7 +298,7 @@ Status could be...
                 chunk
             else
                 try do  # better performance than  Integer.parse
-                    value = String.to_integer(chunk)
+                    String.to_integer(chunk)
                 rescue
                   _  ->   "Error:#{chunk}"
                 end

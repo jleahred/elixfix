@@ -31,6 +31,7 @@ necessary.
     iex> errors
     [" invalid tag value on: BeginString(8)  received: FIX.4.1, expected  FIX.4.4"]
 """
+@spec check_tag_value({%{}, list}, number, String.t) :: {%{}, list}
 def check_tag_value({msg_map, errors}, tag, value) do
   if msg_map[tag] != value do
     {msg_map, errors ++ [" invalid tag value on: #{FTags.get_name(tag)}  " <>
@@ -67,6 +68,7 @@ It will return
     {:error, "invalid val on tag TargetCompID(56)"}
 
 """
+@spec get_tag_value_mandatory_int(String.t, %{}) :: {:ok, integer} | {:error, String.t}
 def get_tag_value_mandatory_int(tag, msg_map)  do
   try do  # better performance than  Integer.parse
     {:ok, String.to_integer(msg_map[tag])}
@@ -94,6 +96,7 @@ It will return
     {[122, 5, 1, nil, nil], ["invalid val on tag SenderCompID(49)", "invalid val on tag Account(1)"]}
 
 """
+@spec get_tag_value_mandatory_ints(%{}, list) :: {:ok, [integer]} | {:error, String.t}
 def get_tag_value_mandatory_ints(msg_map, tags)  do
   Enum.reduce(tags, {[],[]},
       fn(tag, {vals, errors}) ->
@@ -119,6 +122,7 @@ This will check if all tags exists in message parsed
     ["missing tag 999."]
 
 """
+@spec check_mandatory_tags({%{}, [String.t]}, [String.t]) :: {%{}, [String.t]}
 def check_mandatory_tags({msg_map, errors}, tags) do
     check_mand_tag = fn(tag, errs) ->
                         if(Map.has_key?(msg_map,  tag) == false) do
